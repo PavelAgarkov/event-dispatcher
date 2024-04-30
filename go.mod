@@ -1,4 +1,4 @@
-module event_dispatcher
+module github.com/PavelAgarkov/event-dispatcher
 
 go 1.21
 
