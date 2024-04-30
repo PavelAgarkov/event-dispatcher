@@ -8,7 +8,6 @@ import (
 
 type OrderSubscriber struct {
 	*BaseSubscriber
-	// тут моно запиисать указатель на сервис и вызвать его в Subscribe()
 }
 
 func NewOrderSubscriber() *OrderSubscriber {

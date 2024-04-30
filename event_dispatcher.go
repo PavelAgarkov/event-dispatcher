@@ -8,11 +8,14 @@ import (
 )
 
 type EventDispatcher struct {
-	subscribers []Subscriber
+	subscribers  []Subscriber
+	withPriority bool
 }
 
-func NewEventDispatcher() *EventDispatcher {
-	return &EventDispatcher{}
+func NewEventDispatcher(withPriority bool) *EventDispatcher {
+	return &EventDispatcher{
+		withPriority: withPriority,
+	}
 }
 
 func (ed *EventDispatcher) RegisterSubscriber(subscriber Subscriber, events []ListeningEvent, subscriberPriority int64) {
@@ -23,7 +26,9 @@ func (ed *EventDispatcher) RegisterSubscriber(subscriber Subscriber, events []Li
 }
 
 func (ed *EventDispatcher) Dispatch(ctx context.Context, event Event) {
-	ed.sortSubscribersByPriority()
+	if ed.withPriority {
+		ed.sortSubscribersByPriority()
+	}
 	for _, sub := range ed.subscribers {
 		if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
 			sub.Handle(ctx, event)
@@ -40,7 +45,9 @@ func (ed *EventDispatcher) CustomDispatch(ctx context.Context, event Event, cust
 }
 
 func (ed *EventDispatcher) AsyncDispatch(ctx context.Context, event Event) {
-	ed.sortSubscribersByPriority()
+	if ed.withPriority {
+		ed.sortSubscribersByPriority()
+	}
 	for _, sub := range ed.subscribers {
 		if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
 			go sub.Handle(ctx, event)
@@ -49,7 +56,9 @@ func (ed *EventDispatcher) AsyncDispatch(ctx context.Context, event Event) {
 }
 
 func (ed *EventDispatcher) AsyncDispatchWithWait(ctx context.Context, event Event) {
-	ed.sortSubscribersByPriority()
+	if ed.withPriority {
+		ed.sortSubscribersByPriority()
+	}
 	wg := sync.WaitGroup{}
 	for _, sub := range ed.subscribers {
 		if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {

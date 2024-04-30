@@ -26,11 +26,6 @@ func (bs *BaseSubscriber) SetPriority(priority int64) {
 	bs.priority = priority
 }
 
-//type Subscriber interface {
-//	Handle(ctx context.Context, event Event)
-//	GetBaseSubscriber() *BaseSubscriber
-//}
-
 type Subscriber interface {
 	Handle(ctx context.Context, event Event)
 	HandleWithWait(ctx context.Context, event Event, wg *sync.WaitGroup)

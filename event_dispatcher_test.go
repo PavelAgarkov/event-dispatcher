@@ -8,7 +8,7 @@ import (
 
 func TestDispatching(t *testing.T) {
 	ctx := context.Background()
-	ed := NewEventDispatcher()
+	ed := NewEventDispatcher(false)
 	ed.RegisterSubscriber(
 		NewOrderSubscriber(),
 		[]ListeningEvent{
