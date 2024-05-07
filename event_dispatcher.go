@@ -8,8 +8,9 @@ import (
 )
 
 type EventDispatcher struct {
-	subscribers  []Subscriber
-	withPriority bool
+	subscribers     []Subscriber
+	withPriority    bool
+	prioritisedList bool
 }
 
 func NewEventDispatcher(withPriority bool) *EventDispatcher {
@@ -26,8 +27,9 @@ func (ed *EventDispatcher) RegisterSubscriber(subscriber Subscriber, events []Li
 }
 
 func (ed *EventDispatcher) Dispatch(ctx context.Context, event Event) {
-	if ed.withPriority {
+	if ed.withPriority && !ed.prioritisedList {
 		ed.sortSubscribersByPriority()
+		ed.prioritisedList = true
 	}
 	for _, sub := range ed.subscribers {
 		if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
