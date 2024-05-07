@@ -6,6 +6,7 @@ import (
 )
 
 type BaseSubscriber struct {
+	handler      func(ctx context.Context, event Event) error
 	listenEvents []ListeningEvent
 	priority     int64
 }

@@ -2,6 +2,7 @@ package event_dispatcher
 
 import (
 	"context"
+	"fmt"
 	"testing"
 )
 
@@ -13,6 +14,11 @@ func TestDispatching(t *testing.T) {
 		[]ListeningEvent{
 			OrderListeningEvent,
 		},
+		func(ctx context.Context, event Event) error {
+			fmt.Println(event.GetData(), "_fun")
+			fmt.Println("------->", event.GetName())
+			return nil
+		},
 		7,
 	)
 
@@ -21,6 +27,10 @@ func TestDispatching(t *testing.T) {
 		[]ListeningEvent{
 			OrderListeningEvent,
 			FunListeningEvent,
+		},
+		func(ctx context.Context, event Event) error {
+			fmt.Println(event.GetData(), "_order")
+			return nil
 		},
 		2,
 	)

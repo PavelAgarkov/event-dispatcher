@@ -20,9 +20,7 @@ func NewFunSubscriber() *FunSubscriber {
 }
 
 func (fs *FunSubscriber) Handle(ctx context.Context, event Event) {
-	fmt.Println(event.GetData(), "_fun")
-	fmt.Println("------->", fs.OrderEvent.GetName())
-	return
+	_ = fs.handler(ctx, event)
 }
 
 func (fs *FunSubscriber) GetBaseSubscriber() *BaseSubscriber {

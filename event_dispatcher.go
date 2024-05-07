@@ -19,8 +19,14 @@ func NewEventDispatcher(withPriority bool) *EventDispatcher {
 	}
 }
 
-func (ed *EventDispatcher) RegisterSubscriber(subscriber Subscriber, events []ListeningEvent, subscriberPriority int64) {
+func (ed *EventDispatcher) RegisterSubscriber(
+	subscriber Subscriber,
+	events []ListeningEvent,
+	handler func(ctx context.Context, event Event) error,
+	subscriberPriority int64,
+) {
 	bs := subscriber.GetBaseSubscriber()
+	bs.handler = handler
 	bs.SetListenEvents(events)
 	bs.SetPriority(subscriberPriority)
 	ed.subscribers = append(ed.subscribers, subscriber)
@@ -37,7 +43,11 @@ func (ed *EventDispatcher) Dispatch(ctx context.Context, event Event) {
 	}
 }
 
-func (ed *EventDispatcher) CustomDispatch(ctx context.Context, event Event, customDispatchFunction func(ctx context.Context, event Event) error) error {
+func (ed *EventDispatcher) CustomDispatch(
+	ctx context.Context,
+	event Event,
+	customDispatchFunction func(ctx context.Context, event Event) error,
+) error {
 	ed.sortSubscribersByPriority()
 	err := customDispatchFunction(ctx, event)
 	if err != nil {

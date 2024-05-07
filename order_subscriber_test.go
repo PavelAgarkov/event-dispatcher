@@ -15,8 +15,7 @@ func NewOrderSubscriber() *OrderSubscriber {
 }
 
 func (os *OrderSubscriber) Handle(ctx context.Context, event Event) {
-	fmt.Println(event.GetData(), "_order")
-	return
+	_ = os.handler(ctx, event)
 }
 
 func (os *OrderSubscriber) GetBaseSubscriber() *BaseSubscriber {
