@@ -27,19 +27,19 @@ func (ed *EventDispatcher) RegisterSubscriber(subscriber Subscriber, events []Li
 }
 
 func (ed *EventDispatcher) Dispatch(ctx context.Context, event Event) {
-	if ed.withPriority && !ed.prioritisedList {
-		ed.sortSubscribersByPriority()
-		ed.prioritisedList = true
-	}
+	ed.sortSubscribersByPriority()
 	for _, sub := range ed.subscribers {
-		if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
-			sub.Handle(ctx, event)
+		if len(sub.GetBaseSubscriber().GetListenEvents()) > 0 {
+			if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
+				sub.Handle(ctx, event)
+			}
 		}
 	}
 }
 
-func (ed *EventDispatcher) CustomDispatch(ctx context.Context, event Event, custom func() error) error {
-	err := custom()
+func (ed *EventDispatcher) CustomDispatch(ctx context.Context, event Event, customDispatchFunction func(ctx context.Context, event Event) error) error {
+	ed.sortSubscribersByPriority()
+	err := customDispatchFunction(ctx, event)
 	if err != nil {
 		return err
 	}
@@ -47,32 +47,35 @@ func (ed *EventDispatcher) CustomDispatch(ctx context.Context, event Event, cust
 }
 
 func (ed *EventDispatcher) AsyncDispatch(ctx context.Context, event Event) {
-	if ed.withPriority {
-		ed.sortSubscribersByPriority()
-	}
+	ed.sortSubscribersByPriority()
 	for _, sub := range ed.subscribers {
-		if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
-			go sub.Handle(ctx, event)
+		if len(sub.GetBaseSubscriber().GetListenEvents()) > 0 {
+			if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
+				go sub.Handle(ctx, event)
+			}
 		}
 	}
 }
 
 func (ed *EventDispatcher) AsyncDispatchWithWait(ctx context.Context, event Event) {
-	if ed.withPriority {
-		ed.sortSubscribersByPriority()
-	}
+	ed.sortSubscribersByPriority()
 	wg := sync.WaitGroup{}
 	for _, sub := range ed.subscribers {
-		if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
-			wg.Add(1)
-			go sub.HandleWithWait(ctx, event, &wg)
+		if len(sub.GetBaseSubscriber().GetListenEvents()) > 0 {
+			if slices.Contains(sub.GetBaseSubscriber().GetListenEvents(), event.GetName()) {
+				wg.Add(1)
+				go sub.HandleWithWait(ctx, event, &wg)
+			}
 		}
 	}
 	wg.Wait()
 }
 
 func (ed *EventDispatcher) sortSubscribersByPriority() {
-	sort.Slice(ed.subscribers, func(i, j int) bool {
-		return ed.subscribers[i].GetBaseSubscriber().GetPriority() > ed.subscribers[j].GetBaseSubscriber().GetPriority()
-	})
+	if ed.withPriority && !ed.prioritisedList {
+		sort.Slice(ed.subscribers, func(i, j int) bool {
+			return ed.subscribers[i].GetBaseSubscriber().GetPriority() > ed.subscribers[j].GetBaseSubscriber().GetPriority()
+		})
+		ed.prioritisedList = true
+	}
 }
